@@ -1,0 +1,73 @@
+﻿@page "/account/register"
+@using BlazorChatApp.Shared.Models;
+@using Microsoft.AspNetCore.Authorization;
+@inherits RegistrationModalBase
+@layout MainLayout;
+@attribute [AllowAnonymous]
+
+<div class="row justify-content-center registerLoginForm">
+    <div class="col-md-10">
+        <div class="card mt-3 mb-3">
+            <div class="card-header">
+                <h2>Registration</h2>
+            </div>
+            <div class="card-body">
+                <EditForm Model="@registration" OnValidSubmit="RegisterUser">
+                    <DataAnnotationsValidator />
+
+                    <div class="form-group row">
+                        <label class="control-label col-md-12">Email</label>
+                        <div class="col">
+                            <InputText class="form-control" @bind-Value="registration.Email" />
+                            <ValidationMessage For="@(() => registration.Email)" />
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="control-label col-md-12">Username</label>
+                        <div class="col">
+                            <InputText class="form-control" @bind-Value="registration.Username" />
+                            <ValidationMessage For="@(() => registration.Username)" />
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label class="control-label col-md-12">Password</label>
+                        <div class="col">
+                            <InputText type="password" class="form-control" @bind-Value="registration.Password"></InputText>
+                            <ValidationMessage For="@(() => registration.Password)" />
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label class="control-label col-md-12">Confirm Password</label>
+                        <div class="col">
+                            <InputText type="password" class="form-control" @bind-Value="registration.ConfirmPassword"></InputText>
+                            <ValidationMessage For="@(() => registration.ConfirmPassword)" />
+                        </div>
+                    </div>
+                    <p>Select Avatar: </p>
+                    <div class="cc-selector">
+                        @foreach (Avatar item in Enum.GetValues(typeof(Avatar)))
+                        {
+                            <div class="avatarWrapperDiv">
+                            <input id="@item.ToString()" type="radio" value="@((int)item)" checked="@(item == (Enum.GetValues(typeof(Avatar)).Cast<Avatar>().First()))" name="Avatar" @onchange="@(() => registration.Avatar = item)"/>
+                                <label class="drinkcard-cc @item.ToString()" for="@item.ToString()"></label>
+                            </div>
+                        }
+                    </div>
+                    <table width="100%">
+                        <tr>
+                            <td>
+                                <a @onclick="RedirectToLogin" style="color:blue;cursor:pointer;">Need Login?</a>
+                            </td>
+                            <td class="float-right">
+                                <button type="submit" class="btn btn-success">Register</button>
+                            </td>
+                        </tr>
+                    </table>
+                    <div style="color:red;text-align:center">@Error</div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>

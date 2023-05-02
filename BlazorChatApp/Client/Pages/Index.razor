@@ -1,0 +1,177 @@
+﻿@page "/chat"
+@inherits IndexModalBase
+@using Microsoft.AspNetCore.Authorization;
+@layout MainLayout
+
+<PageTitle>Blazor Chat App</PageTitle>
+<AuthorizeView>
+    <Authorizing>
+        Authorizing...
+    </Authorizing>
+    <Authorized>
+
+        <div class="container">
+            <div class="row clearfix">
+                <div class="col-lg-12">
+                    <div class="card chat-app">
+                        <div id="plist" class="people-list">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fa fa-search"></i></span>
+                                </div>
+                                <input type="search" class="form-control" placeholder="Search..." @bind="this.InputSearch" @oninput="@((e) => { InputSearch = (string)e.Value; SearchUser();})">
+                            </div>
+                            <ul class="list-unstyled chat-list mt-2 mb-0 usersList">
+                                @{
+                                    var UsersObject = new List<BlazorChatApp.Shared.Models.ChatUser>();
+                                    if (FilteredUsers.Count != ConnectedUsers.Count)
+                                    {
+                                        UsersObject = FilteredUsers;
+                                    }
+                                    else
+                                    {
+                                        UsersObject = ConnectedUsers;
+                                    }
+                                }
+                                @foreach (var user in UsersObject)
+                                {
+                                    <li class="clearfix @(user.Username == SelectedUser?.Username ? "active":"")" @onclick="() => SelectUser(user)">
+                                        <img src=@("/imgs/avatars/" + user.Avatar + ".png") alt="avatar">
+                                        <div class="about">
+                                            <div class="name">@user.Username <strong>@(user.UnreadMessageCount != 0 ? "(" + user.UnreadMessageCount + ")" : "")</strong></div>
+                                            <div class="status"> <i class="fa fa-circle @(user.IsOnline? "online" : "offline")"></i> @(user.IsOnline ? "online" : "offline") </div>
+                                        </div>
+                                    </li>
+                                }
+                                @* <li class="clearfix">
+                                <img src="https://bootdey.com/img/Content/avatar/avatar3.png" alt="avatar">
+                                <div class="about">
+                                <div class="name">Mike Thomas</div>
+                                <div class="status"> <i class="fa fa-circle online"></i> online </div>
+                                </div>
+                                </li>
+                                <li class="clearfix">
+                                <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="avatar">
+                                <div class="about">
+                                <div class="name">Christian Kelly</div>
+                                <div class="status"> <i class="fa fa-circle offline"></i> left 10 hours ago </div>
+                                </div>
+                                </li>
+                                <li class="clearfix">
+                                <img src="https://bootdey.com/img/Content/avatar/avatar8.png" alt="avatar">
+                                <div class="about">
+                                <div class="name">Monica Ward</div>
+                                <div class="status"> <i class="fa fa-circle online"></i> online </div>
+                                </div>
+                                </li>
+                                <li class="clearfix">
+                                <img src="https://bootdey.com/img/Content/avatar/avatar3.png" alt="avatar">
+                                <div class="about">
+                                <div class="name">Dean Henry</div>
+                                <div class="status"> <i class="fa fa-circle offline"></i> offline since Oct 28 </div>
+                                </div>
+                                </li>*@
+                            </ul>
+                        </div>
+                        <div class="chat">
+                            <div class="chat-header clearfix">
+                                <div class="row">
+
+                                    <div class="col-lg-6">
+                                        <a href="javascript:void(0);" data-toggle="modal" data-target="#view_info">
+                                            @if (SelectedUser != null)
+                                            {
+                                                <img src=@("/imgs/avatars/" + SelectedUser.Avatar + ".png") alt="avatar">
+                                            }
+                                        </a>
+                                        <div class="chat-about">
+                                            @if (SelectedUser != null)
+                                            {
+                                                <h6 class="m-b-0">@SelectedUser.Username</h6>
+                                                <small>@(ConnectedUsers.SingleOrDefault(x => x.Username == SelectedUser.Username).IsOnline ? "Online" : "Offline")</small>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-6 hidden-sm text-right">
+                                        <InputFile id="img-file-upload" OnChange="@ImgUpload" hidden accept="image/png, image/gif, image/jpeg" />
+                                        <button class="btn btn-outline-secondary" style="cursor:initial !important">Logged as: @CurrentUsername</button>
+                                        @*<a href="javascript:void(0);" class="btn btn-outline-secondary"><i class="fa fa-camera"></i></a>*@
+                                        <button id="btnUploadImage" class="btn btn-outline-primary" @onclick="OpenFileUpload" disabled="@(SelectedUser == null ? true : false)"><i class="fa fa-image" title="Send image"></i></button>
+                                        <a href="javascript:void(0);" class="btn btn-outline-warning" title="Logout" @onclick="Logout"><i class="fa fa-sign-out"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="chat-history chatHistoryList@(SelectedUser==null?" chatHistoryListNoUserSelected":"")" @ref=ChatHistoryDiv>
+                                <ul class="m-b-0">
+                                    @if (SelectedUser != null)
+                                    {
+                                        foreach (var item in SelectedUserChatHistory)
+                                        {
+                                            var messageDate = "";
+                                            if (item.SendDate.Month == DateTime.Now.Month && item.SendDate.Day == DateTime.Now.Day)
+                                            {
+                                                messageDate = string.Format("{0:hh:mm tt}, Today", item.SendDate);
+                                            }
+                                            else
+                                            {
+                                                messageDate = string.Format("{0:dd.MM.yyyy hh:mm tt}", item.SendDate);
+                                            }
+                                            if (item.ReceiverUserId == CurrentUserId)
+                                            {
+
+                                                <li class="clearfix">
+                                                    <div class="message-data text-right">
+                                                        <span class="message-data-time">@messageDate</span>
+                                                        <img src=@("/imgs/avatars/" + SelectedUser.Avatar + ".png") alt="avatar">
+                                                    </div>
+                                                    @if(item.IsImgMessage == false)
+                                                    {
+                                                        <div class="message other-message float-right">@item.Message</div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="message other-message float-right" style="max-width:375px"><img src="/imgsMessage/@item.ImgFileName" style="max-width:336px"></div>
+                                                    }
+                                                </li>
+                                            }
+                                            else
+                                            {
+                                                <li class="clearfix">
+                                                    <div class="message-data">
+                                                        <span class="message-data-time">@messageDate</span>
+                                                    </div>
+                                                    @if(item.IsImgMessage == false)
+                                                    {
+                                                        <div class="message my-message">@item.Message</div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="message my-message" style="max-width:375px"><img src="/imgsMessage/@item.ImgFileName" style="max-width:336px"></div>
+                                                    }
+                                                </li>
+                                            }
+                                        }
+                                    }
+                                </ul>
+                            </div>
+                            <div class="chat-message clearfix">
+                                <div class="input-group mb-0">
+                                    <div class="input-group-prepend" @onclick="SendMessage">
+                                        <span class="input-group-text"><i class="fa fa-paper-plane"></i></span>
+                                    </div>
+                                    <input disabled="@(SelectedUser == null ? true : false)" type="text" class="form-control" placeholder="Enter text here..." @bind="this.InputMessage" @oninput="@((e) => { InputMessage = (string)e.Value;})" @onkeyup="Send" @onclick="InputMessageClicked" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        @{
+            NavigationManager.NavigateTo("account/login");
+        }
+    </NotAuthorized>
+</AuthorizeView>

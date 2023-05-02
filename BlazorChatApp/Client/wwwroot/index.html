@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>BlazorChatApp</title>
+    <base href="/" />
+    <script src="js/jquery-1.10.2.min.js"></script>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <link href="fontawesome-free-6.4.0-web/css/fontawesome.css" rel="stylesheet">
+    <link href="fontawesome-free-6.4.0-web/css/brands.css" rel="stylesheet">
+    <link href="fontawesome-free-6.4.0-web/css/solid.css" rel="stylesheet">
+    <link id="tmpAppCssNotToShowBlinkError" href="css/app.css" rel="stylesheet" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link href="BlazorChatApp.Client.styles.css" rel="stylesheet" />
+</head>
+
+<body>
+    <div id="app">
+        <svg class="loading-progress">
+            <circle r="40%" cx="50%" cy="50%" />
+            <circle r="40%" cx="50%" cy="50%" />
+        </svg>
+        <div class="loading-progress-text"></div>
+    </div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+    <script src="_framework/blazor.webassembly.js"></script>
+    <script>
+        var date = new Date();
+        var version = date.getFullYear() + ("0" + (date.getMonth() + 1)).slice(-2) + ("0" + date.getDate()).slice(-2) + ("0" + date.getHours()).slice(-2) + ("0" + date.getMinutes()).slice(-2) + ("0" + date.getSeconds()).slice(-2) + ("00" + date.getMilliseconds()).slice(-3);
+        if (!document.getElementById('mainCss')) {
+            var link = document.createElement('link');
+            link.id = 'mainCss';
+            link.rel = 'stylesheet';
+            link.href = 'css/app.css' + "?version=" + version;
+            document.head.appendChild(link);
+
+            setTimeout(function () {
+                const tmpAppCss = document.getElementById('tmpAppCssNotToShowBlinkError');
+                tmpAppCss.remove();
+            }, 1000);
+        }
+
+        window.scrollChatToEnd = (div) => {
+            div.scrollTop = div.scrollHeight;
+        };
+
+        window.triggerImgUpload = () => {
+            document.getElementById("img-file-upload").click();
+        };
+    </script>
+</body>
+
+</html>
