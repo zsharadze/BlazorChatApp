@@ -1,4 +1,5 @@
 ﻿using BlazorChatApp.Client.Pages.Account;
+using BlazorChatApp.Server.Infrastructure;
 using BlazorChatApp.Shared.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -17,14 +18,16 @@ namespace BlazorChatApp.Server.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly EmailValidator _emailValidator;
         private readonly IConfiguration _configuration;
 
-        public AuthenticationController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, SignInManager<ApplicationUser> signInManager, IConfiguration configuration)
+        public AuthenticationController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, SignInManager<ApplicationUser> signInManager, IConfiguration configuration, EmailValidator emailValidator)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _signInManager = signInManager;
             _configuration = configuration;
+            _emailValidator = emailValidator;
         }
 
         [HttpPost]
@@ -32,7 +35,7 @@ namespace BlazorChatApp.Server.Controllers
         {
             if (ModelState.IsValid)
             {
-                if (!IsValidEmail(model.Email))
+                if (!_emailValidator.IsValidEmail(model.Email))
                 {
                     return Ok(new RegisterResult { Success = false, Message = "Invalid email address" });
                 }
@@ -64,19 +67,6 @@ namespace BlazorChatApp.Server.Controllers
             }
         }
 
-        private bool IsValidEmail(string email)
-        {
-            try
-            {
-                var addr = new System.Net.Mail.MailAddress(email);
-                return addr.Address == email;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
         [HttpPost]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
@@ -93,9 +83,9 @@ namespace BlazorChatApp.Server.Controllers
 
                     var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
                     var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-                    DateTime expiry;                   
+                    DateTime expiry;
                     expiry = DateTime.Now.AddDays(30);
-                    
+
                     var token = new JwtSecurityToken(
                         _configuration["JwtIssuer"],
                         _configuration["JwtAudience"],

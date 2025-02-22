@@ -1,11 +1,11 @@
 using BlazorChatApp.Server.Data;
 using BlazorChatApp.Server.Hubs;
+using BlazorChatApp.Server.Infrastructure;
 using BlazorChatApp.Shared.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -79,7 +79,7 @@ builder.Services.AddResponseCompression(opts =>
     opts.MimeTypes = ResponseCompressionDefaults.MimeTypes
     .Concat(new[] { "application/octet-stream" });
 });
-
+builder.Services.AddScoped<EmailValidator>();
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())

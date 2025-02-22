@@ -210,15 +210,15 @@ a, .btn-link {
 
 .usersList {
     overflow:auto;
-    max-height:521px;
+    max-height:471px;
 }
 
 .chatHistoryList {
     overflow: auto;
-    min-height: 650px;
-    max-height: 650px;
+    min-height: calc(100vh - 310px);
+    max-height: 500px;
 }
 
 .chatHistoryListNoUserSelected {
-    height: 650px;
+    min-height: calc(100vh - 270px);
 }
